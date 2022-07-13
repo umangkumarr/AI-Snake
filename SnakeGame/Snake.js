@@ -96,8 +96,8 @@ class Snake {
 
         }
         this.tailBlocks.push(createVector(this.x, this.y));
-        this.x += this.velX;
-        this.y += this.velY;
+        this.x = (this.x + this.velX + blocksX) % blocksX;
+        this.y = (this.y + this.velY + blocksY) % blocksY;
     }
 
     getNextPosition() {
@@ -245,8 +245,9 @@ class Snake {
 
     update() {
         if (!this.dead) {
-            this.checkCollisions();
             this.move();
+            this.checkCollisions();
+
         }
 
     }
