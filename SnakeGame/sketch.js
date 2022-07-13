@@ -35,10 +35,7 @@ function setup() {
     hc = new HamiltonianCycle(blocksX, blocksY);
     s.resetOnHamiltonian(hc.cycle);
 
-    frameRate(30);
-
-
-    background(20);
+    frameRate(40);
 }
 
 function setBlocks() {
@@ -60,8 +57,9 @@ function setBlocks() {
 
 
 function draw() {
+
     if (!pause) {
-        background(19);
+        background(20);
 
         noStroke();
 
@@ -95,7 +93,11 @@ function draw() {
 
 
 function windowResized() {
-    setup();
+    resizeCanvas(windowWidth, windowHeight);
+    blockSize = min(width / blocksX, height / blocksY);
+    outlineLength = blockSize / 15;
+    xOffset = (width - blockSize * blocksX) / 2.0;
+    yOffset = (height - blockSize * blocksY) / 2.0;
 };
 
 function keyPressed() {
@@ -107,7 +109,7 @@ function keyPressed() {
         case 'h':
             showHc = true;
             break;
-        
+
         case 'p':
             pause ^= 1;
             break;
