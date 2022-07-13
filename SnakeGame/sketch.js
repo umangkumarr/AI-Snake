@@ -8,6 +8,8 @@ let xOffset = 0;
 let yOffset = 0;
 var speedMultiplier = 1;
 let titleText;
+let showHc = false;
+let pause = false;
 
 function preload() {
     titleText = loadImage("SnakeGame/t2.png");
@@ -33,7 +35,7 @@ function setup() {
     hc = new HamiltonianCycle(blocksX, blocksY);
     s.resetOnHamiltonian(hc.cycle);
 
-    frameRate(40);
+    frameRate(30);
 
 
     background(20);
@@ -58,44 +60,37 @@ function setBlocks() {
 
 
 function draw() {
-    background(19);
+    if (!pause) {
+        background(19);
 
-    textAlign(CENTER, CENTER);
-    fill(255);
-    noStroke();
-    textSize(100);
-    if (canvas.width > 700) {
-
+        noStroke();
 
         let newImageWidth = canvas.width - 2 * xOffset;
         newImageWidth *= 0.6;
         let widthRatio = newImageWidth / titleText.width;
         let newImageHeight = titleText.height * widthRatio;
         image(titleText, canvas.width / 2 - newImageWidth / 2, canvas.height / 2 - newImageHeight / 2, newImageWidth, newImageHeight);
-        fill(20, 230);
+        fill(20, 200);
         rect(canvas.width / 2 - newImageWidth / 2, canvas.height / 2 - newImageHeight / 2, newImageWidth, newImageHeight)
 
+        fill(15);
+        rect(0, 0, xOffset, height);
+        rect(width, height, -xOffset, -height);
+
+        push();
+        translate(xOffset, yOffset);
+        fill(0);
+        s.show();
+        if (showHc) {
+            hc.show();
+        }
+
+        for (let i = 0; i < speedMultiplier; i++) {
+            s.update();
+        }
+
+        pop();
     }
-
-    fill(15);
-    rect(0, 0, width, yOffset);
-    rect(0, 0, xOffset, height);
-    // rect(width, height, -width, -yOffset);
-    // rect(width, height, -xOffset, -height);
-
-
-    push();
-    translate(xOffset, yOffset);
-
-
-    fill(0);
-    s.show();
-    // hc.show();
-    for (let i = 0; i < speedMultiplier; i++) {
-        s.update();
-    }
-
-    pop();
 }
 
 
@@ -105,12 +100,28 @@ function windowResized() {
 
 function keyPressed() {
     switch (key) {
-        case ' ': speedMultiplier = 50;
+        case ' ':
+            speedMultiplier = 50;
+            break;
+
+        case 'h':
+            showHc = true;
+            break;
+        
+        case 'p':
+            pause ^= 1;
+            break;
     }
 }
 
 function keyReleased() {
     switch (key) {
-        case ' ': speedMultiplier = 1;
+        case ' ':
+            speedMultiplier = 1;
+            break;
+            
+        case 'h':
+            showHc = false;
+            break;
     }
 }

@@ -151,10 +151,7 @@ class HamiltonianCycle {
             push();
             translate(blockSize / 2, blockSize / 2);
             scale(blockSize);
-            fill(255);
-            textAlign(CENTER, CENTER);
-            textSize(0.3);
-            text(i, this.cycle[i].x, this.cycle[i].y);
+            
             stroke(255, 100);
             strokeWeight(0.1);
             if (i !== this.cycle.length - 1) {
