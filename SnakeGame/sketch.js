@@ -12,7 +12,7 @@ let showHc = false;
 let pause = false;
 
 function preload() {
-    titleText = loadImage("SnakeGame/t2.png");
+    titleText = loadImage("SnakeGame/image/t2.png");
 }
 
 function setup() {
@@ -119,7 +119,7 @@ function keyReleased() {
         case ' ':
             speedMultiplier = 1;
             break;
-            
+
         case 'h':
             showHc = false;
             break;
