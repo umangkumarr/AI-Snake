@@ -1,5 +1,5 @@
 class Snake {
-    constructor() {
+    constructor(UserMode) {
         this.x = floor(blocksX / 2);
         this.y = floor(blocksY / 2);
         this.tailBlocks = [];
@@ -14,8 +14,12 @@ class Snake {
 
 
         this.path;
-        this.controlledByPlayer = false;
         this.weWin = false;
+
+        this.controlledByPlayer = UserMode;
+        this.playerDirection = 0;
+        this.dx = [0, 1, 0, -1]
+        this.dy = [-1, 0, 1, 0]
 
     }
 
@@ -77,7 +81,9 @@ class Snake {
                 this.velX = nextMove.x;
                 this.velY = nextMove.y;
             }
-
+        } else {
+            this.velX = this.dx[this.playerDirection];
+            this.velY = this.dy[this.playerDirection];
         }
 
 
@@ -239,8 +245,8 @@ class Snake {
 
     update() {
         if (!this.dead) {
-            this.move();
             this.checkCollisions();
+            this.move();
         }
 
     }
@@ -256,12 +262,14 @@ class Snake {
         for (var i = 0; i < this.tailBlocks.length; i++) {
             if (this.tailBlocks[i].x === this.x && this.tailBlocks[i].y === this.y) {
                 this.dead = true;
+                setup();
                 return;
             }
         }
 
         if (this.x < 0 || this.x >= blocksX || this.y < 0 || this.y >= blocksY) {
             this.dead = true;
+            setup();
             return;
         }
 

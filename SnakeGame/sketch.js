@@ -9,7 +9,8 @@ let yOffset = 0;
 var speedMultiplier = 1;
 let titleText;
 let showHc = false;
-let pause = false;
+let paUse = false;
+let UserMode = false;
 
 function preload() {
     titleText = loadImage("SnakeGame/image/t2.png");
@@ -30,12 +31,15 @@ function setup() {
     xOffset = (width - blockSize * blocksX) / 2.0;
     yOffset = (height - blockSize * blocksY) / 2.0;
 
-    s = new Snake();
+    s = new Snake(UserMode);
 
     hc = new HamiltonianCycle(blocksX, blocksY);
     s.resetOnHamiltonian(hc.cycle);
 
     frameRate(40);
+    if (UserMode) {
+        frameRate(20);
+    }
 }
 
 function setBlocks() {
@@ -58,7 +62,7 @@ function setBlocks() {
 
 function draw() {
 
-    if (!pause) {
+    if (!paUse) {
         background(20);
 
         noStroke();
@@ -100,7 +104,7 @@ function windowResized() {
     yOffset = (height - blockSize * blocksY) / 2.0;
 };
 
-function keyPressed() {
+function keyPressed(keyCode) {
     switch (key) {
         case ' ':
             speedMultiplier = 50;
@@ -111,8 +115,30 @@ function keyPressed() {
             break;
 
         case 'p':
-            pause ^= 1;
+            paUse ^= 1;
             break;
+
+        case 'u' || 'U':
+            UserMode ^= 1;
+            setup();
+            break;
+
+        case 'ArrowUp':
+            s.playerDirection = 0;
+            break;
+
+        case 'ArrowRight':
+            s.playerDirection = 1;
+            break;
+
+        case 'ArrowDown':
+            s.playerDirection = 2;
+            break;
+
+        case 'ArrowLeft':
+            s.playerDirection = 3;
+            break;
+
     }
 }
 
