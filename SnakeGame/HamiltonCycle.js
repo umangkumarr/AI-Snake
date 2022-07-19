@@ -7,9 +7,10 @@ class HamiltonianCycle {
 
 
     // generate random Hamiltonian Cycle
+    // refer https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.35.3648&rep=rep1&type=pdf
+    // for better understanding of the algorithm
     createCycle() {
-        this.createSpanningTree();
-
+        this.createSpanningTree(); // make spanning tree
 
         let cycle = [];
         let cycleNodes = [];
@@ -87,10 +88,7 @@ class HamiltonianCycle {
         degree1Nodes = cycleNodes.filter((n) => n.spanningTreeAdjacentNodes.length === 1);
         newEdges = [];
         for (let n of degree1Nodes) {
-            //
-            // let d = n.spanningTreeAdjacentNodes[0].getDirectionTo(n);
-            //
-            //
+
             //add that direction again to get the next node
             let d = { x: n.x, y: n.y };
             for (let m of degree1Nodes) {
@@ -107,10 +105,7 @@ class HamiltonianCycle {
                         if (uniqueEdge) {
                             newEdges.push(newEdge);
                         }
-
                         break;
-
-
                     }
                 }
             }
@@ -145,13 +140,14 @@ class HamiltonianCycle {
 
     }
 
+    // show hamiltonian cycle
     show() {
 
         for (let i = 0; i < this.cycle.length; i++) {
             push();
             translate(blockSize / 2, blockSize / 2);
             scale(blockSize);
-            
+
             stroke(255, 100);
             strokeWeight(0.1);
             if (i !== this.cycle.length - 1) {
@@ -163,7 +159,7 @@ class HamiltonianCycle {
         }
     }
 
-
+    // create spanning tree for square nodes in the grid
     createSpanningTree() {
         let stNodes = [];
         for (var i = 0; i < this.w / 2; i++) {
@@ -175,7 +171,6 @@ class HamiltonianCycle {
         for (var n of stNodes) {
             n.setEdges(stNodes);
         }
-
         let spanningTree = [];
         let randomNode = stNodes[floor(random(stNodes.length))];
         spanningTree.push(new HEdge(randomNode, randomNode.edges[0]));
@@ -199,9 +194,6 @@ class HamiltonianCycle {
         for (let n of stNodes) {
             n.setSpanningTreeEdges(spanningTree);
         }
-
-
-
         this.spanningTree = spanningTree;
         this.spanningTreeNodes = stNodes;
     }
@@ -253,11 +245,13 @@ class HNode {
 
     }
 
+    // all possible neighbours
     setEdges(allNodes) {
         this.edges = [];
         this.edges = allNodes.filter((n) => (dist(n.x, n.y, this.x, this.y) === 1));
     }
 
+    // add spanning edges between the nodes
     setSpanningTreeEdges(spanningTree) {
         for (let e of spanningTree) {
             if (e.contains(this)) {
@@ -265,7 +259,6 @@ class HNode {
             }
         }
     }
-
 
     getDirectionTo(other) {
         return { x: other.x - this.x, y: other.y - this.y };
@@ -298,9 +291,7 @@ class HEdge {
         } else {
             return this.node1;
         }
-
     }
-
 
     connectNodes() {
         this.node1.spanningTreeAdjacentNodes.push(this.node2);
@@ -334,6 +325,7 @@ class HPath {
         return this.nodesInPath[this.nodesInPath.length - 1];
     }
 
+    // for shortest path possible to the apple
     getSnakeTailPositionAfterFollowingPath(snake) {
 
         if (this.pathLength - snake.addCount < snake.tailBlocks.length) {

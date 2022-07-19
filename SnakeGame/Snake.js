@@ -12,7 +12,6 @@ class Snake {
         this.addCount = 0;
         this.dead = false;
 
-
         this.path;
         this.weWin = false;
 
@@ -20,10 +19,9 @@ class Snake {
         this.playerDirection = 0;
         this.dx = [0, 1, 0, -1]
         this.dy = [-1, 0, 1, 0]
-
     }
 
-
+    // reset game
     resetOnHamiltonian(cycle) {
         this.cycle = cycle;
         this.tailBlocks = [];
@@ -38,12 +36,9 @@ class Snake {
 
     }
 
-
+    // draw snake
     show() {
-        noStroke();
-
         fill(0, 180, 0);
-
         noStroke();
 
         rect((this.x + this.tailBlocks[this.tailBlocks.length - 1].x) * blockSize / 2.0 + outlineLength, (this.y + this.tailBlocks[this.tailBlocks.length - 1].y) * blockSize / 2.0 + outlineLength, blockSize - outlineLength * 2, blockSize - outlineLength * 2);
@@ -67,12 +62,14 @@ class Snake {
         if (this.weWin)
             return;
         if (!this.controlledByPlayer) {
+
+            // on complete traversal find the new path to the apple
             if (!this.path || this.path.pathCounter >= this.path.pathLength) {
                 this.calculatePath();
 
             }
 
-            if (!this.path || this.path.pathLength === 0) {
+            if (!this.path || this.path.pathLength === 0) { // if no path available move to the next shortest node in the hamiltonian cycle
                 let nextPos = this.getNextPosition();
                 this.velX = nextPos.x - this.x;
                 this.velY = nextPos.y - this.y;
@@ -131,7 +128,7 @@ class Snake {
 
     }
 
-
+    // check if the newpos over takes the tail
     overTakesTail(newPos, h, t) {
         let minDistanceBetweenHeadAndTail = 50;
         let head;
@@ -167,6 +164,7 @@ class Snake {
         return false;
     }
 
+    // get new path based on A* star
     getPathBasedOnAStar() {
         for (let n of this.cycle) {
             n.resetForAStar();
@@ -247,19 +245,20 @@ class Snake {
         if (!this.dead) {
             this.move();
             this.checkCollisions();
-
         }
 
     }
 
     checkCollisions() {
 
+        // if no space left on the board restart
         if (blocksX * blocksY - (this.tailBlocks.length + 1) <= 0) {
             this.weWin = true;
             setup();
             return;
         }
 
+        // check if the snake is over its body
         for (var i = 0; i < this.tailBlocks.length; i++) {
             if (this.tailBlocks[i].x === this.x && this.tailBlocks[i].y === this.y) {
                 this.dead = true;
@@ -268,12 +267,14 @@ class Snake {
             }
         }
 
+        // check if the snake is within the boundaries
         if (this.x < 0 || this.x >= blocksX || this.y < 0 || this.y >= blocksY) {
             this.dead = true;
             setup();
             return;
         }
 
+        // snake ate an apple
         if (this.x === this.apple.x && this.y === this.apple.y) {
             this.ateApple();
         }
@@ -282,20 +283,15 @@ class Snake {
 
 
     ateApple() {
-
         this.addCount += 2;
-
         this.apple = new Apple(this);
-
         this.calculatePath();
 
     }
 
 
     calculatePath() {
-
         this.path = this.getPathBasedOnAStar();
-
     }
 
     isAppleOnSnake(a) {

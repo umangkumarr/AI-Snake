@@ -24,8 +24,6 @@ function setup() {
 
     setBlocks();
 
-    // blocksX = blocksY = 10;
-
     blockSize = min(width / blocksX, height / blocksY);
     outlineLength = blockSize / 15;
     xOffset = (width - blockSize * blocksX) / 2.0;
@@ -42,6 +40,7 @@ function setup() {
     }
 }
 
+// set the block size
 function setBlocks() {
 
     let testBlockSize = 1;
@@ -67,6 +66,7 @@ function draw() {
 
         noStroke();
 
+        // background image
         let newImageWidth = canvas.width - 2 * xOffset;
         newImageWidth *= 0.6;
         let widthRatio = newImageWidth / titleText.width;
@@ -138,7 +138,6 @@ function keyPressed(keyCode) {
         case 'ArrowLeft':
             s.playerDirection = 3;
             break;
-
     }
 }
 
