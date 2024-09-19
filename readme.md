@@ -53,6 +53,4 @@ To know the working of A* pathfinding Algorithm:
 * https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.35.3648&rep=rep1&type=pdf ( random hamiltonian cycle )
 ---
 
-## Contribute
-I would appreciate it if you could correct my grammar mistakes.
 
