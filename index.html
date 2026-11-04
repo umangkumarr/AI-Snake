@@ -1,27 +1,52 @@
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
-        integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
-    <title>AI-Snake</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <meta name="description" content="Watch Hamiltonian-cycle-guided A* pathfinding play Snake, or take control yourself.">
+  <title>AI Snake — Pathfinding Playground</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-    <div style="height: 45px; width: 99vw; margin: 0px; padding: 0px; bottom: 0px; z-index: 2; position: absolute;">
-        <p style="color:white; opacity: 0.3; font-family: 'Times New Roman', Times, serif;">Press U - To Activate User
-            Mode*</p>
-    </div>
-
-    <script language="javascript" type="text/javascript" src="libraries/p5.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/sketch.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/Snake.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/Apple.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/HamiltonCycle.js"></script>
-
+  <div class="app">
+    <header class="topbar">
+      <div class="identity"><div class="brand-mark" aria-hidden="true">◈</div><div><h1>AI Snake</h1><p>Hamiltonian pathfinding playground</p></div></div>
+      <div class="header-actions"><span class="status"><span class="status-dot"></span><span id="status-label">AI RUNNING</span></span><a class="github" href="https://github.com/umangkumarr/AI-Snake" target="_blank" rel="noopener noreferrer" aria-label="View on GitHub">GitHub ↗</a></div>
+    </header>
+    <main class="workspace">
+      <section class="board-section" aria-label="Snake game board">
+        <div id="game-stage" class="game-stage"></div>
+        <div class="board-corner">HAMILTONIAN + A* <span class="corner-dot">•</span> LIVE SIMULATION</div>
+        <div id="pause-overlay" class="pause-overlay" hidden><div class="pause-symbol">Ⅱ</div><strong>Paused</strong><span>Press P or Resume to continue</span></div>
+        <div class="board-hint">SPACE <span>boost</span> <i></i> H <span>cycle</span> <i></i> U <span>human mode</span></div>
+      </section>
+      <aside class="sidebar" aria-label="Game controls and statistics">
+        <section class="panel stats-panel"><div class="section-heading"><span>LIVE STATISTICS</span><span class="live-dot">● LIVE</span></div>
+          <div class="stat-grid"><div class="stat"><label>APPLES</label><strong id="stat-score">0</strong></div><div class="stat"><label>MOVES</label><strong id="stat-moves">0</strong></div><div class="stat"><label>SNAKE LENGTH</label><strong id="stat-length">4</strong></div><div class="stat"><label>BOARD CELLS</label><strong id="stat-cells">—</strong></div></div>
+        </section>
+        <section class="panel"><div class="section-heading"><span>CONTROLS</span></div>
+          <label class="control-label" for="mode-select">PLAY MODE</label><div class="segmented" role="group" aria-label="Play mode"><button id="mode-ai" class="segment active" type="button" aria-pressed="true">✧ AI Mode</button><button id="mode-human" class="segment" type="button" aria-pressed="false">⌁ Human</button></div>
+          <div class="button-row"><button id="pause-button" class="btn btn-primary" type="button">Ⅱ Pause</button><button id="restart-button" class="btn btn-secondary" type="button">↻ Restart</button></div>
+          <div class="control-line"><label for="speed-select">SIMULATION SPEED</label><strong id="speed-label">1×</strong></div>
+          <input id="speed-select" type="range" min="0" max="5" step="1" value="0" aria-label="Simulation speed">
+          <div class="slider-ends"><span>1×</span><span>50×</span></div>
+        </section>
+        <section class="panel"><div class="section-heading"><span>VISUALIZATION</span></div>
+          <label class="toggle-row"><span><strong>Hamiltonian cycle</strong><small>Display the safe traversal loop</small></span><input id="cycle-toggle" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+          <label class="toggle-row"><span><strong>Planned path</strong><small>Display the AI's current route</small></span><input id="path-toggle" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+        </section>
+        <section class="panel about"><div class="section-heading"><span>HOW IT WORKS</span></div><p>The snake follows a Hamiltonian cycle, then uses A* shortcuts to reach apples faster without abandoning cycle-order safety checks.</p><div class="legend"><span><i class="legend-snake"></i> Snake</span><span><i class="legend-apple"></i> Apple</span><span><i class="legend-path"></i> Route</span></div></section>
+        <section class="keyboard-help"><span>KEYBOARD</span><div><kbd>U</kbd> Switch mode <kbd>P</kbd> Pause <kbd>H</kbd> Show cycle <kbd>SPACE</kbd> Boost</div></section>
+        <div id="touch-controls" class="touch-controls" hidden><span>SWIPE OR USE ARROWS</span><div class="dpad"><button data-direction="0" class="up" aria-label="Up">↑</button><button data-direction="3" class="left" aria-label="Left">←</button><button data-direction="2" class="down" aria-label="Down">↓</button><button data-direction="1" class="right" aria-label="Right">→</button></div></div>
+      </aside>
+    </main>
+    <footer class="footer"><span>BUILT WITH p5.js · GRAPH THEORY · PATHFINDING</span><span>AI Snake / v2</span></footer>
+  </div>
+  <script src="libraries/p5.js"></script>
+  <script src="SnakeGame/sketch.js"></script>
+  <script src="SnakeGame/Snake.js"></script>
+  <script src="SnakeGame/Apple.js"></script>
+  <script src="SnakeGame/HamiltonCycle.js"></script>
 </body>
-
 </html>
