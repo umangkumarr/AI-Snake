@@ -1,4 +1,4 @@
-# AI Snake
+# Snake 2.0
 
 A Hamiltonian-cycle-guided Snake AI with A* shortcut pathfinding, playable human mode, and a responsive visualization dashboard.
 
@@ -20,7 +20,10 @@ Open `http://localhost:8000/` in your browser. No build or package installation 
 - **Hamiltonian cycle**: visualize the generated traversal loop.
 - **Planned path**: visualize the current A* route.
 - **Arrow keys / touch controls / swipe**: steer in human mode.
-- **U**: toggle user mode, **P**: pause, **H**: temporarily show the cycle, **Space**: hold to boost.
+- **A**: watch AI, **U**: switch play mode, **P**: pause/resume, **R**: restart, **S**: settings, **Escape**: close settings.
+- **H**: temporarily show the cycle, **Space**: hold to boost.
+
+Snake 2.0 is the full-screen AI Snake playground. Keyboard hints appear directly on the floating toolbar.
 
 The original gameplay, AI safety heuristic, world wrapping, and automatic reset behavior are intentionally retained.
 
@@ -82,3 +85,16 @@ To know the working of A* pathfinding Algorithm:
 ---
 
 
+
+## Optimization checks
+
+Run from the repository root (Node.js, no dependencies):
+
+```bash
+node tests/regression.cjs
+node tests/benchmark.cjs
+```
+
+The regression checks cover circular body storage and occupancy consistency, shared path storage, human-mode apple handling, collision-before-victory ordering, original cycle-boundary fallback behavior, static overlay caching, and pause/resume rendering. The benchmark uses two seeded 100,000-move simulations on a 40×24 board. It measures game logic only; browser rendering, DOM, GPU, and actual FPS require browser profiling.
+
+Body removal and occupancy queries take constant time. Search branches share immutable parent links instead of copying whole routes; selected routes are materialized for playback. The grid and Hamiltonian overlay are cached in an offscreen canvas, and paused games redraw only when needed.

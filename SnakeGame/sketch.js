@@ -7,6 +7,7 @@ let s,hc, totalMoves=0, applesEaten=0, controlsBound=false, currentSpeed=1;
 const speedLevels=[1,2,5,10,25,50];
 let pointerStart=null, statsLastUpdated=0;
 let gameCanvasInitialized=false;
+let boardLayer=null, cachedCycle=null, cachedShowCycle=null;
 
 function setup() {
     const host=document.getElementById('game-stage');
@@ -40,7 +41,9 @@ function setup() {
     totalMoves=0; applesEaten=0;
     speedMultiplier=currentSpeed;
     frameRate(UserMode?20:40);
+    cachedCycle=null;
     updateUI();
+    if(paUse){noLoop();redraw();}else loop();
 }
 function setBlocks() {
     let testBlockSize=1;
@@ -61,13 +64,18 @@ function bindControls() {
     document.getElementById('mode-ai').addEventListener('click',()=>setMode(false));
     document.getElementById('mode-human').addEventListener('click',()=>setMode(true));
     document.getElementById('pause-button').addEventListener('click',togglePause);
-    document.getElementById('restart-button').addEventListener('click',()=>setup());
-    document.getElementById('cycle-toggle').addEventListener('change',e=>{cyclePinned=e.target.checked;showHc=cyclePinned||cycleKeyHeld;});
-    document.getElementById('path-toggle').addEventListener('change',e=>showPath=e.target.checked);
+    document.getElementById('resume-button').addEventListener('click',togglePause);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){const panel=document.getElementById('settings');if(panel.open&&panel.contains(document.activeElement))panel.querySelector('summary').focus();panel.open=false;}});
+    document.addEventListener('pointerdown',e=>{const panel=document.getElementById('settings');if(!panel.contains(e.target))panel.open=false;});
+    document.querySelectorAll('button').forEach(button=>button.addEventListener('click',e=>{if(e.detail>0)button.blur();}));
+    document.getElementById('restart-button').addEventListener('click',()=>{paUse=false;setup();});
+    document.getElementById('cycle-toggle').addEventListener('change',e=>{cyclePinned=e.target.checked;showHc=cyclePinned||cycleKeyHeld;requestRender();});
+    document.getElementById('path-toggle').addEventListener('change',e=>{showPath=e.target.checked;requestRender();});
     document.getElementById('speed-select').addEventListener('input',e=>{
         currentSpeed=speedLevels[Number(e.target.value)];
         speedMultiplier=currentSpeed;
         document.getElementById('speed-label').textContent=currentSpeed+'×';
+        e.target.setAttribute('aria-valuetext',currentSpeed+' times');
     });
     document.querySelectorAll('[data-direction]').forEach(b=>b.addEventListener('click',()=>{
         if(UserMode) s.playerDirection=Number(b.dataset.direction);
@@ -88,9 +96,11 @@ function bindControls() {
 function setMode(mode) {
     if(UserMode===mode)return;
     UserMode=mode;
+    paUse=false;
     setup(); // Preserve existing behavior: mode switching restarts.
 }
-function togglePause(){paUse=!paUse;updateUI();}
+function requestRender(){if(paUse)redraw();}
+function togglePause(){paUse=!paUse;updateUI();if(paUse){noLoop();redraw();}else loop();}
 function updateUI(){
     if(!s)return;
     document.getElementById('stat-score').textContent=applesEaten.toLocaleString();
@@ -102,22 +112,51 @@ function updateUI(){
         el.classList.toggle('active',active);
         el.setAttribute('aria-pressed',String(active));
     }
-    document.getElementById('status-label').textContent=paUse?'PAUSED':UserMode?'HUMAN PLAYING':'AI RUNNING';
+    document.getElementById('status-label').textContent=paUse?'Paused':UserMode?'You’re playing':'AI playing';
+    document.querySelector('.status').classList.toggle('is-paused',paUse);
+    document.getElementById('game-stage').classList.toggle('human-mode',UserMode);
+    document.getElementById('board-tip').innerHTML=UserMode?'Arrow keys or swipe to move':'Press <kbd>U</kbd> to take control';
+    document.getElementById('path-toggle').disabled=UserMode;
     document.getElementById('pause-overlay').hidden=!paUse;
-    document.getElementById('pause-button').textContent=paUse?'▶ Resume':'Ⅱ Pause';
+    document.getElementById('pause-label').textContent=paUse?'Resume':'Pause';
+    const pauseButton=document.getElementById('pause-button');
+    pauseButton.classList.toggle('is-paused',paUse);
+    pauseButton.setAttribute('title',(paUse?'Resume':'Pause')+' (P)');
+    pauseButton.setAttribute('aria-pressed',String(paUse));
     document.getElementById('touch-controls').hidden=!UserMode;
 }
 function draw(){
+    renderBoard();
     if(paUse)return;
-    background(13,21,29);
+    for(let i=0;i<speedMultiplier;i++){s.update();totalMoves++;}
+    if(millis()-statsLastUpdated>160){updateUI();statsLastUpdated=millis();}
+}
+function renderBoard(){
+    clear();
     push();translate(xOffset,yOffset);
-    noStroke();fill(17,29,37);rect(0,0,blocksX*blockSize,blocksY*blockSize);
-    stroke(42,62,73,110);strokeWeight(.6);
-    for(let x=1;x<blocksX;x++)line(x*blockSize,0,x*blockSize,blocksY*blockSize);
-    for(let y=1;y<blocksY;y++)line(0,y*blockSize,blocksX*blockSize,y*blockSize);
-    if(showHc)hc.show();
+    if(!boardLayer || boardLayer.width!==width || boardLayer.height!==height){
+        if(boardLayer)boardLayer.remove();
+        boardLayer=createGraphics(width,height);
+        boardLayer.pixelDensity(pixelDensity());
+        cachedCycle=null;
+    }
+    if(cachedCycle!==hc || cachedShowCycle!==showHc){
+        boardLayer.clear();
+        boardLayer.stroke(155,143,119,9);boardLayer.strokeWeight(.6);
+        for(let x=1;x<blocksX;x++)boardLayer.line(x*blockSize,0,x*blockSize,blocksY*blockSize);
+        for(let y=1;y<blocksY;y++)boardLayer.line(0,y*blockSize,blocksX*blockSize,y*blockSize);
+        if(showHc){
+            boardLayer.stroke(255,100);boardLayer.strokeWeight(blockSize*.1);
+            for(let i=0;i<hc.cycle.length;i++){
+                const a=hc.cycle[i],b=hc.cycle[(i+1)%hc.cycle.length];
+                boardLayer.line((a.x+.5)*blockSize,(a.y+.5)*blockSize,(b.x+.5)*blockSize,(b.y+.5)*blockSize);
+            }
+        }
+        cachedCycle=hc;cachedShowCycle=showHc;
+    }
+    image(boardLayer,0,0);
     if(showPath&&!UserMode&&s.path){
-        noFill();stroke(137,214,248,205);strokeWeight(max(1,blockSize*.18));
+        noFill();stroke(164,151,123,205);strokeWeight(max(1,blockSize*.18));
         beginShape();
         vertex((s.x+.5)*blockSize,(s.y+.5)*blockSize);
         for(let i=s.path.pathCounter+1;i<s.path.nodesInPath.length;i++){
@@ -127,8 +166,6 @@ function draw(){
         endShape();
     }
     s.show();pop();
-    for(let i=0;i<speedMultiplier;i++){s.update();totalMoves++;}
-    if(millis()-statsLastUpdated>160){updateUI();statsLastUpdated=millis();}
 }
 function windowResized(){
     const host=document.getElementById('game-stage');
@@ -138,14 +175,21 @@ function windowResized(){
     outlineLength=blockSize/15;
     xOffset=(width-blockSize*blocksX)/2;
     yOffset=(height-blockSize*blocksY)/2;
+    cachedCycle=null;
+    requestRender();
 }
-function keyPressed(){
+function keyPressed(event){
+    if (/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName) || event?.ctrlKey || event?.metaKey || event?.altKey) return;
+    if ((key===' '||key==='Enter') && /^(BUTTON|SUMMARY|A)$/.test(document.activeElement.tagName)) return;
     const pressed=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft',' '].includes(key)?key:key.toLowerCase();
     switch(pressed){
         case ' ':speedMultiplier=50;return false;
-        case 'h':cycleKeyHeld=true;showHc=true;break;
-        case 'p':togglePause();break;
-        case 'u':setMode(!UserMode);break;
+        case 'h':cycleKeyHeld=true;showHc=true;requestRender();break;
+        case 'p':if(!event?.repeat)togglePause();break;
+        case 'u':if(!event?.repeat)setMode(!UserMode);break;
+        case 'a':if(!event?.repeat)setMode(false);break;
+        case 'r':if(!event?.repeat){paUse=false;setup();}break;
+        case 's':if(!event?.repeat){const panel=document.getElementById('settings');panel.open=!panel.open;}break;
         case 'ArrowUp':s.playerDirection=0;return false;
         case 'ArrowRight':s.playerDirection=1;return false;
         case 'ArrowDown':s.playerDirection=2;return false;
@@ -153,8 +197,10 @@ function keyPressed(){
     }
 }
 function keyReleased(){
-    switch(key){
+    switch(key.length===1?key.toLowerCase():key){
         case ' ':speedMultiplier=currentSpeed;return false;
-        case 'h':cycleKeyHeld=false;showHc=cyclePinned;break;
+        case 'h':cycleKeyHeld=false;showHc=cyclePinned;requestRender();break;
     }
 }
+// Releasing focus must also release temporary keyboard controls.
+window.addEventListener('blur',()=>{cycleKeyHeld=false;showHc=cyclePinned;speedMultiplier=currentSpeed;requestRender();});

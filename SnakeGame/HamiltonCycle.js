@@ -308,7 +308,8 @@ class HPath {
     constructor(startingNode, finishingNode) {
 
         this.pathLength = 0;
-        this.nodesInPath = [startingNode];
+        this.link = { node: startingNode, parent: null };
+        this.cachedNodes = null;
         this.finishNode = finishingNode;
 
         this.distanceToApple = 0;
@@ -321,22 +322,23 @@ class HPath {
     }
 
     addToTail(node) {
-        this.nodesInPath.push(node);
+        this.link = { node, parent: this.link };
+        this.cachedNodes = null;
         this.pathLength += 1;
         this.setDistanceToApple();
     }
     getLastNode() {
-        return this.nodesInPath[this.nodesInPath.length - 1];
+        return this.link.node;
     }
 
     // for shortest path possible to the apple
     getSnakeTailPositionAfterFollowingPath(snake) {
 
         if (this.pathLength - snake.addCount < snake.tailBlocks.length) {
-            return snake.tailBlocks[max(0, this.pathLength - snake.addCount)];
+            return snake.tailBlocks.get(max(0, this.pathLength - snake.addCount));
         }
         let tailMoved = this.pathLength - snake.addCount;
-        return this.nodesInPath[tailMoved - snake.tailBlocks.length];
+        return this.getNodeAt(tailMoved - snake.tailBlocks.length);
     }
 
     getNextMove() {
@@ -346,13 +348,34 @@ class HPath {
         return { x, y };
     }
 
-    clone() {
-        let clone = new HPath(this.nodesInPath[0], this.finishNode);
-        clone.nodesInPath = [...this.nodesInPath];
-        clone.pathLength = this.pathLength;
-        clone.distanceToApple = this.distanceToApple;
-
-        return clone;
+    getNodeAt(index) {
+        let link = this.link;
+        for (let i = this.pathLength; i > index; i--) link = link.parent;
+        return link.node;
     }
 
+    // Only the selected route is materialized for playback and visualization.
+    get nodesInPath() {
+        if (!this.cachedNodes) {
+            const nodes = new Array(this.pathLength + 1);
+            let link = this.link;
+            for (let i = this.pathLength; i >= 0; i--) {
+                nodes[i] = link.node;
+                link = link.parent;
+            }
+            this.cachedNodes = nodes;
+        }
+        return this.cachedNodes;
+    }
+
+    clone() {
+        const clone = Object.create(HPath.prototype);
+        clone.link = this.link;
+        clone.cachedNodes = null;
+        clone.finishNode = this.finishNode;
+        clone.pathLength = this.pathLength;
+        clone.distanceToApple = this.distanceToApple;
+        clone.pathCounter = 0;
+        return clone;
+    }
 }
