@@ -8,7 +8,7 @@ class Apple {
             this.y = floor(random(blocksY));
         }
 
-        print(this);
+        // Avoid console output on every apple spawn.
     }
 
     show() {
