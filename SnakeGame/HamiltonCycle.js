@@ -134,8 +134,11 @@ class HamiltonianCycle {
         }
 
         this.cycle = cycle;
+        this.nodeIndex = new Int32Array(this.w * this.h);
+        this.nodeIndex.fill(-1);
         for (let i = 0; i < this.cycle.length; i++) {
             this.cycle[i].cycleNo = i;
+            this.nodeIndex[this.cycle[i].y * this.w + this.cycle[i].x] = i;
         }
 
     }
@@ -209,13 +212,8 @@ class HamiltonianCycle {
     }
 
     getNodeNo(x, y) {
-        for (let i = 0; i < this.cycle.length; i++) {
-            if (this.cycle[i].x === x && this.cycle[i].y === y) {
-                return i;
-            }
-        }
-        return -1;
-
+        if (x < 0 || y < 0 || x >= this.w || y >= this.h) return -1;
+        return this.nodeIndex[y * this.w + x];
     }
 
     getPossiblePositionsFrom(x, y) {
@@ -247,8 +245,14 @@ class HNode {
 
     // all possible neighbours
     setEdges(allNodes) {
+        // Arrays are constructed in column-major order (x * height + y).
+        const height = allNodes[0]._gridHeight || (allNodes[0]._gridHeight = Math.max(...allNodes.map(n => n.y)) + 1);
+        const width = allNodes.length / height;
         this.edges = [];
-        this.edges = allNodes.filter((n) => (dist(n.x, n.y, this.x, this.y) === 1));
+        for (const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+            const x=this.x+dx,y=this.y+dy;
+            if(x>=0&&y>=0&&x<width&&y<height) this.edges.push(allNodes[x*height+y]);
+        }
     }
 
     // add spanning edges between the nodes
