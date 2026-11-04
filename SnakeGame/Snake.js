@@ -130,7 +130,7 @@ class Snake {
 
     // check if the newpos over takes the tail
     overTakesTail(newPos, h, t) {
-        let minDistanceBetweenHeadAndTail = 50;
+        const minDistanceBetweenHeadAndTail = 50; // Preserve original AI safety margin.
         let head;
         if (h) {
             head = h.cycleNo;
@@ -285,6 +285,7 @@ class Snake {
     ateApple() {
         this.addCount += 2;
         this.apple = new Apple(this);
+        applesEaten++;
         this.calculatePath();
 
     }
