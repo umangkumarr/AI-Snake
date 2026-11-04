@@ -1,3 +1,31 @@
+# AI Snake
+
+A Hamiltonian-cycle-guided Snake AI with A* shortcut pathfinding, playable human mode, and a responsive visualization dashboard.
+
+## Preview this branch locally
+
+The app is a static website. From the repository root:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open `http://localhost:8000/` in your browser. No build or package installation is required.
+
+## Controls
+
+- **AI / Human**: switch between the original autonomous and player modes (starts a new round).
+- **Pause / Restart**: control the current game or begin a new one.
+- **Speed**: 1×, 2×, 5×, 10×, 25×, or 50× simulation updates per frame.
+- **Hamiltonian cycle**: visualize the generated traversal loop.
+- **Planned path**: visualize the current A* route.
+- **Arrow keys / touch controls / swipe**: steer in human mode.
+- **U**: toggle user mode, **P**: pause, **H**: temporarily show the cycle, **Space**: hold to boost.
+
+The original gameplay, AI safety heuristic, world wrapping, and automatic reset behavior are intentionally retained.
+
+---
+
 # How AI Snake works?
 This is simpler than simple. Yup! it is. It is just AI and mathematics(The God of fear fears this subject).
 
