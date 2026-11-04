@@ -6,15 +6,29 @@ let showHc=false, cyclePinned=false, cycleKeyHeld=false, showPath=false, paUse=f
 let s,hc, totalMoves=0, applesEaten=0, controlsBound=false, currentSpeed=1;
 const speedLevels=[1,2,5,10,25,50];
 let pointerStart=null, statsLastUpdated=0;
+let gameCanvasInitialized=false;
 
 function setup() {
     const host=document.getElementById('game-stage');
-    if(!window.canvas) {
-        window.canvas=createCanvas(host.clientWidth,host.clientHeight);
-        canvas.parent(host);
-        canvas.style('position','absolute');
-        bindControls();
+    // p5.js may provide a default window.canvas before setup runs.
+    // Only our own initialization flag is authoritative: otherwise the
+    // canvas and *all UI button listeners* can be silently skipped.
+    if (!gameCanvasInitialized) {
+        const gameCanvas = createCanvas(
+            Math.max(1, host.clientWidth),
+            Math.max(1, host.clientHeight)
+        );
+        gameCanvas.parent('game-stage');
+        gameCanvas.elt.id = 'snake-canvas';
+        gameCanvas.elt.style.position = 'absolute';
+        gameCanvas.elt.style.inset = '0';
+        gameCanvas.elt.style.display = 'block';
+        gameCanvas.elt.style.zIndex = '1';
+        gameCanvas.elt.style.pointerEvents = 'none';
+        gameCanvasInitialized = true;
     }
+    // Binding must never depend on the existence of a canvas.
+    bindControls();
     setBlocks();
     blockSize=min(width/blocksX,height/blocksY);
     outlineLength=blockSize/15;
