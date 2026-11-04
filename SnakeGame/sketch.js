@@ -2,7 +2,7 @@ let maxBlocks = 1000;
 var blockSize, blocksX, blocksY, outlineLength;
 let xOffset=0,yOffset=0;
 var speedMultiplier=1;
-let showHc=false, showPath=false, paUse=false, UserMode=false;
+let showHc=false, cyclePinned=false, cycleKeyHeld=false, showPath=false, paUse=false, UserMode=false;
 let s,hc, totalMoves=0, applesEaten=0, controlsBound=false, currentSpeed=1;
 const speedLevels=[1,2,5,10,25,50];
 let pointerStart=null, statsLastUpdated=0;
@@ -48,7 +48,7 @@ function bindControls() {
     document.getElementById('mode-human').addEventListener('click',()=>setMode(true));
     document.getElementById('pause-button').addEventListener('click',togglePause);
     document.getElementById('restart-button').addEventListener('click',()=>setup());
-    document.getElementById('cycle-toggle').addEventListener('change',e=>showHc=e.target.checked);
+    document.getElementById('cycle-toggle').addEventListener('change',e=>{cyclePinned=e.target.checked;showHc=cyclePinned||cycleKeyHeld;});
     document.getElementById('path-toggle').addEventListener('change',e=>showPath=e.target.checked);
     document.getElementById('speed-select').addEventListener('input',e=>{
         currentSpeed=speedLevels[Number(e.target.value)];
@@ -129,7 +129,7 @@ function keyPressed(){
     const pressed=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft',' '].includes(key)?key:key.toLowerCase();
     switch(pressed){
         case ' ':speedMultiplier=50;return false;
-        case 'h':showHc=true;break;
+        case 'h':cycleKeyHeld=true;showHc=true;break;
         case 'p':togglePause();break;
         case 'u':setMode(!UserMode);break;
         case 'ArrowUp':s.playerDirection=0;return false;
@@ -141,6 +141,6 @@ function keyPressed(){
 function keyReleased(){
     switch(key){
         case ' ':speedMultiplier=currentSpeed;return false;
-        case 'h':showHc=false;break;
+        case 'h':cycleKeyHeld=false;showHc=cyclePinned;break;
     }
 }
