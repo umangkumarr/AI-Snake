@@ -164,6 +164,46 @@ class Snake {
         return false;
     }
 
+    // Binary min-heap: maintains the same A* score ordering as the old
+    // full-array sort while reducing each insertion/removal to O(log n).
+    // Stable sequence numbers preserve FIFO behavior for equal scores.
+    makePathQueue() {
+        const heap=[];
+        let sequence=0;
+        const less=(a,b)=>a.score<b.score||(a.score===b.score&&a.order<b.order);
+        return {
+            push(path) {
+                const item={path,score:path.distanceToApple+path.pathLength,order:sequence++};
+                let i=heap.length;
+                heap.push(item);
+                while(i>0){
+                    const p=(i-1)>>1;
+                    if(!less(item,heap[p]))break;
+                    heap[i]=heap[p];i=p;
+                }
+                heap[i]=item;
+            },
+            pop() {
+                if(!heap.length)return undefined;
+                const first=heap[0].path,last=heap.pop();
+                if(heap.length){
+                    let i=0;
+                    while(true){
+                        const l=i*2+1;
+                        if(l>=heap.length)break;
+                        const r=l+1;
+                        const child=r<heap.length&&less(heap[r],heap[l])?r:l;
+                        if(!less(heap[child],last))break;
+                        heap[i]=heap[child];i=child;
+                    }
+                    heap[i]=last;
+                }
+                return first;
+            },
+            get length(){return heap.length;}
+        };
+    }
+
     // get new path based on A* star
     getPathBasedOnAStar() {
         for (let n of this.cycle) {
@@ -172,7 +212,7 @@ class Snake {
         this.appleCyclePosition = hc.getNodeNo(this.apple.x, this.apple.y);
 
         let startNode = this.cycle[hc.getNodeNo(this.x, this.y)];
-        let bigList = [];
+        let bigList = this.makePathQueue();
 
         let winningPath;
 
@@ -186,7 +226,7 @@ class Snake {
             if (bigList.length === 0) {
                 return winningPath;
             }
-            let currentPath = bigList.shift();
+            let currentPath = bigList.pop();
             if (winningPath && currentPath.pathLength >= winningPath.pathLength) {
                 continue;
             }
@@ -228,7 +268,7 @@ class Snake {
             }
 
             //now we need to sort the bigList based on the distances to the apple plus the current distance of the path
-            bigList.sort((a, b) => ((a.distanceToApple + a.pathLength) - (b.distanceToApple + b.pathLength)));
+            // The priority queue keeps the open set ordered without re-sorting.
         }
     }
 
