@@ -8,19 +8,13 @@ class Apple {
             this.y = floor(random(blocksY));
         }
 
-        print(this);
+        // Avoid console output on every apple spawn.
     }
 
     show() {
         noStroke();
-        fill(200, 0, 0);
-        push();
-        translate(this.x * blockSize + outlineLength, this.y * blockSize + outlineLength);
-        scale((blockSize - 2 * outlineLength) / 3.0);
-        rect(1, 0, 1, 1);
-        rect(1, 2, 1, 1);
-        rect(0, 1, 1, 1);
-        rect(2, 1, 1, 1);
-        pop();
+        fill(187, 116, 95);
+        rect(this.x * blockSize + blockSize * .17, this.y * blockSize + blockSize * .17,
+            blockSize * .66, blockSize * .66, blockSize * .22);
     }
 };

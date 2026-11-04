@@ -1,27 +1,21 @@
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.1.7/css/fork-awesome.min.css"
-        integrity="sha256-gsmEoJAws/Kd3CjuOQzLie5Q3yshhvmo7YNtBG7aaEY=" crossorigin="anonymous">
-    <title>AI-Snake</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090909"><meta name="description" content="Snake 2.0: full-screen Snake, powered by Hamiltonian pathfinding. Watch the AI or take control."><title>Snake 2.0 — Snake with a mind of its own</title><link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
-    <div style="height: 45px; width: 99vw; margin: 0px; padding: 0px; bottom: 0px; z-index: 2; position: absolute;">
-        <p style="color:white; opacity: 0.3; font-family: 'Times New Roman', Times, serif;">Press U - To Activate User
-            Mode*</p>
-    </div>
-
-    <script language="javascript" type="text/javascript" src="libraries/p5.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/sketch.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/Snake.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/Apple.js"></script>
-    <script language="javascript" type="text/javascript" src="SnakeGame/HamiltonCycle.js"></script>
-
+<main class="game" aria-label="Full-screen Snake game">
+  <div class="watermark" aria-hidden="true">snake<span> 2.0</span></div>
+  <div id="game-stage" class="game-stage"></div>
+  <header class="hud top-hud"><a class="brand" href="./" aria-label="Snake 2.0 home"><svg class="brand-icon" width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 25h14a5 5 0 0 0 0-10H11a4 4 0 0 1 0-8h13" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="7" r="1" fill="#241b10"/></svg><span class="brand-name">snake<span> 2.0</span></span><span class="brand-tag">AI PLAYGROUND</span></a><div class="scoreboard" aria-label="Round statistics"><div><span class="apple-dot" aria-hidden="true"></span><strong id="stat-score">0</strong><span>apples</span></div><span class="score-divider"></span><div><strong id="stat-length">4</strong><span>length</span></div></div></header>
+  <div id="pause-overlay" class="pause-overlay" hidden><span class="pause-icon" aria-hidden="true">Ⅱ</span><h1>Paused</h1><button id="resume-button" type="button">Resume game <span aria-hidden="true">↗</span></button><p>or press <kbd>P</kbd></p></div>
+  <div class="bottom-hud hud">
+    <div class="game-caption"><span class="status"><i class="status-dot"></i><span id="status-label" role="status">AI playing</span></span><span id="board-tip">Press <kbd>U</kbd> to take control</span></div>
+    <nav class="toolbar" aria-label="Game controls"><div class="segmented" role="group" aria-label="Play mode"><button id="mode-ai" type="button" class="active" aria-pressed="true" aria-keyshortcuts="A" title="Watch AI (A)"><span>Watch AI</span><kbd>A</kbd></button><button id="mode-human" type="button" aria-pressed="false" aria-keyshortcuts="U" title="Play yourself (U)"><span>Play</span><kbd>U</kbd></button></div><span class="toolbar-divider"></span><button id="pause-button" class="tool-button" type="button" title="Pause (P)" aria-keyshortcuts="P"><svg class="pause-glyph" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10"/></svg><span id="pause-label">Pause</span><kbd>P</kbd></button><button id="restart-button" class="tool-button restart-button" type="button" title="Restart game (R)" aria-keyshortcuts="R"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8a6 6 0 1 1 1 7M4 3v5h5"/></svg><span>Restart</span><kbd>R</kbd></button><details id="settings" class="settings"><summary title="Settings (S)" aria-label="Game settings" aria-keyshortcuts="S"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--surface)"/><circle cx="15" cy="17" r="3" fill="var(--surface)"/></svg><kbd>S</kbd></summary><div class="settings-panel"><h2>Fine-tune your game</h2><div class="speed-heading"><label for="speed-select">Speed</label><output id="speed-label" for="speed-select">1×</output></div><input id="speed-select" type="range" min="0" max="5" step="1" value="0" aria-valuetext="1 times"><div class="range-labels"><span>1×</span><span>50×</span></div><label class="toggle-row"><span>Show safe loop<small>Hamiltonian cycle</small></span><input id="cycle-toggle" type="checkbox" role="switch"></label><label class="toggle-row"><span>Show planned path<small>AI route to the apple</small></span><input id="path-toggle" type="checkbox" role="switch"></label><div class="detail-stats"><span>Moves <strong id="stat-moves">0</strong></span><span>Cells <strong id="stat-cells">—</strong></span></div><p class="shortcuts"><kbd>H</kbd> Hold for loop · <kbd>Space</kbd> Boost<br><kbd>Esc</kbd> Close settings</p><a href="https://github.com/umangkumarr/AI-Snake" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a></div></details></nav>
+    <span class="ambient-label"><i></i> A LITTLE GAME. A CLEVER MIND.</span>
+  </div>
+  <div id="touch-controls" class="touch-controls" hidden><div class="dpad"><button type="button" data-direction="0" class="up" aria-label="Up">↑</button><button type="button" data-direction="3" class="left" aria-label="Left">←</button><button type="button" data-direction="2" class="down" aria-label="Down">↓</button><button type="button" data-direction="1" class="right" aria-label="Right">→</button></div></div>
+</main>
+<script src="libraries/p5.js"></script><script src="SnakeGame/sketch.js"></script><script src="SnakeGame/Snake.js"></script><script src="SnakeGame/Apple.js"></script><script src="SnakeGame/HamiltonCycle.js"></script>
 </body>
-
 </html>

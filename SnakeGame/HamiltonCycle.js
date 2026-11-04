@@ -134,8 +134,11 @@ class HamiltonianCycle {
         }
 
         this.cycle = cycle;
+        this.nodeIndex = new Int32Array(this.w * this.h);
+        this.nodeIndex.fill(-1);
         for (let i = 0; i < this.cycle.length; i++) {
             this.cycle[i].cycleNo = i;
+            this.nodeIndex[this.cycle[i].y * this.w + this.cycle[i].x] = i;
         }
 
     }
@@ -209,13 +212,8 @@ class HamiltonianCycle {
     }
 
     getNodeNo(x, y) {
-        for (let i = 0; i < this.cycle.length; i++) {
-            if (this.cycle[i].x === x && this.cycle[i].y === y) {
-                return i;
-            }
-        }
-        return -1;
-
+        if (x < 0 || y < 0 || x >= this.w || y >= this.h) return -1;
+        return this.nodeIndex[y * this.w + x];
     }
 
     getPossiblePositionsFrom(x, y) {
@@ -247,8 +245,14 @@ class HNode {
 
     // all possible neighbours
     setEdges(allNodes) {
+        // Arrays are constructed in column-major order (x * height + y).
+        const height = allNodes[0]._gridHeight || (allNodes[0]._gridHeight = Math.max(...allNodes.map(n => n.y)) + 1);
+        const width = allNodes.length / height;
         this.edges = [];
-        this.edges = allNodes.filter((n) => (dist(n.x, n.y, this.x, this.y) === 1));
+        for (const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+            const x=this.x+dx,y=this.y+dy;
+            if(x>=0&&y>=0&&x<width&&y<height) this.edges.push(allNodes[x*height+y]);
+        }
     }
 
     // add spanning edges between the nodes
@@ -304,7 +308,8 @@ class HPath {
     constructor(startingNode, finishingNode) {
 
         this.pathLength = 0;
-        this.nodesInPath = [startingNode];
+        this.link = { node: startingNode, parent: null };
+        this.cachedNodes = null;
         this.finishNode = finishingNode;
 
         this.distanceToApple = 0;
@@ -317,22 +322,23 @@ class HPath {
     }
 
     addToTail(node) {
-        this.nodesInPath.push(node);
+        this.link = { node, parent: this.link };
+        this.cachedNodes = null;
         this.pathLength += 1;
         this.setDistanceToApple();
     }
     getLastNode() {
-        return this.nodesInPath[this.nodesInPath.length - 1];
+        return this.link.node;
     }
 
     // for shortest path possible to the apple
     getSnakeTailPositionAfterFollowingPath(snake) {
 
         if (this.pathLength - snake.addCount < snake.tailBlocks.length) {
-            return snake.tailBlocks[max(0, this.pathLength - snake.addCount)];
+            return snake.tailBlocks.get(max(0, this.pathLength - snake.addCount));
         }
         let tailMoved = this.pathLength - snake.addCount;
-        return this.nodesInPath[tailMoved - snake.tailBlocks.length];
+        return this.getNodeAt(tailMoved - snake.tailBlocks.length);
     }
 
     getNextMove() {
@@ -342,13 +348,34 @@ class HPath {
         return { x, y };
     }
 
-    clone() {
-        let clone = new HPath(this.nodesInPath[0], this.finishNode);
-        clone.nodesInPath = [...this.nodesInPath];
-        clone.pathLength = this.pathLength;
-        clone.distanceToApple = this.distanceToApple;
-
-        return clone;
+    getNodeAt(index) {
+        let link = this.link;
+        for (let i = this.pathLength; i > index; i--) link = link.parent;
+        return link.node;
     }
 
+    // Only the selected route is materialized for playback and visualization.
+    get nodesInPath() {
+        if (!this.cachedNodes) {
+            const nodes = new Array(this.pathLength + 1);
+            let link = this.link;
+            for (let i = this.pathLength; i >= 0; i--) {
+                nodes[i] = link.node;
+                link = link.parent;
+            }
+            this.cachedNodes = nodes;
+        }
+        return this.cachedNodes;
+    }
+
+    clone() {
+        const clone = Object.create(HPath.prototype);
+        clone.link = this.link;
+        clone.cachedNodes = null;
+        clone.finishNode = this.finishNode;
+        clone.pathLength = this.pathLength;
+        clone.distanceToApple = this.distanceToApple;
+        clone.pathCounter = 0;
+        return clone;
+    }
 }
